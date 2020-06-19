@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { select, line, curveCardinal, axisBottom, axisLeft, scaleLinear} from 'd3';
+import { select, axisBottom, axisLeft, scaleLinear, scaleBand } from 'd3';
 import './App.css';
 
 
@@ -11,55 +11,43 @@ function App() {
   // will be called initially and on every data changz
   useEffect(() => {
     const svg = select(svgRef.current);
-    const xScale = scaleLinear()
-          .domain([0, data.length - 1])
-          .range([0, 300]);
+    const xScale = scaleBand()
+          .domain(data.map((value, index) => index))
+          .range([0, 300])
+          .padding(0.5);
 
     const yScale = scaleLinear()
           .domain([0, 150])
           .range([150, 0]);
+    const colorScale = scaleLinear()
+          .domain([75,100, 150])
+          .range(["green","orange", "red"])
+          .clamp(true)
 
-    const xAxis = axisBottom(xScale).ticks(data.length).tickFormat(index => index +1);
-
-    const yAxis = axisLeft(yScale);
-
+    const xAxis = axisBottom(xScale).ticks(data.length);
     svg
         .select(".x-axis")
         .style("transform", "translateY(150px)")
         .call(xAxis);
 
+    const yAxis = axisLeft(yScale);
     svg
       .select(".y-axis")
       .style("transform", "translateX(0px)")
       .call(yAxis);
-  
-  // generates the "d" attrubute of a path element
-    const myLine = line()
-      .x((value, index) => xScale(index))
-      .y(yScale)
-      .curve(curveCardinal);
 
-  // svg of the "Circle"
-  //   svg
-  //   .selectAll("circle")
-  //   .data(data)
-  //   .join("circle")
-  //   .attr("r", value => value)
-  //   .attr("cx", value => value * 2)
-  //   .attr("cy", value => value * 2)
-  //   .attr("stroke", "blue")
-
-  //renders path element, and attaches
-  //the "d" attribute from line generator above
-      svg
-        .selectAll(".line")
-        .data([data])
-        .join("path")
-        .attr("class", "line")
-        .attr("d", myLine)
-        .attr("fill", "none")
-        .attr("stroke", "blue");
-   }, [data])
+    svg.selectAll(".bar")
+      .data(data)
+      .join("rect")
+      .attr("class", "bar")      
+      .style("transform", "scale(1, -1)")
+      .attr("x", (value, index) => xScale(index))
+      .attr("y", -150)      
+      .attr("width", xScale.bandwidth())
+      .transition()
+      .attr("fill", colorScale)
+      .attr("height", value => 150 - yScale(value));  
+   }, [data]);
 
   return (
     <React.Fragment>
@@ -68,7 +56,7 @@ function App() {
         <g className="y-axis" />
       </svg>
       <br />
-      <button onClick={() => setData(data.map(value => value - 5))}>
+      <button onClick={() => setData(data.map(value => value + 5))}>
         Update Data
       </button>
       <button onClick={() => setData(data.filter(value => value <= 35))}>
