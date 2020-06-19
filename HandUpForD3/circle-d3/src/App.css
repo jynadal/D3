@@ -1,3 +1,13 @@
+svg {
+  margin:50px;
+  background-color: #eee;
+  overflow: visible;
+}
+
+
+
+
+/*
 .App {
   text-align: center;
 }
@@ -36,3 +46,4 @@
     transform: rotate(360deg);
   }
 }
+*/
