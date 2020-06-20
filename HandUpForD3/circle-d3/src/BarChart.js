@@ -1,12 +1,29 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { select, axisBottom, axisLeft, scaleLinear, scaleBand } from 'd3';
-import './App.css';
-//import data from 'App';
+
+const useResizeObserver = ref => {
+    const [dimensions, setDimensions] = useState(null);
+    useEffect(() => {
+        const observeTarget = ref.current;
+        const resizeObserver = new ResizeObserver((entries) => {
+            console.log(entries);
+            // set resized dimensions here
+        });
+        resizeObserver.observe(observeTarget);
+        return () => {
+            resizeObserver.unobserve(observeTarget);
+        };
+
+    }, [ref])
+    return dimensions;
+};
+
 
 
 function BarChart({data}) {
  // const [data, setData] = useState([25, 30, 45, 60, 20, 65, 75,])
   const svgRef = useRef();
+  const dimensions = useResizeObserver(svgRef);
 
   // will be called initially and on every data changz
   useEffect(() => {
@@ -15,12 +32,12 @@ function BarChart({data}) {
     // scales
     const xScale = scaleBand()
           .domain(data.map((value, index) => index))
-          .range([0, 300])
+          .range([0, 300])  // change
           .padding(0.5);
 
     const yScale = scaleLinear()
-          .domain([0, 150])
-          .range([150, 0]);
+          .domain([0, 150])  // todo
+          .range([150, 0]);  // change
 
     const colorScale = scaleLinear()
           .domain([75,100, 150])
