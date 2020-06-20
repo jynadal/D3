@@ -1,13 +1,16 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { select, axisBottom, axisLeft, scaleLinear, scaleBand } from 'd3';
+import ResizeObserver from 'resize-observer-polyfill';
+
 
 const useResizeObserver = ref => {
     const [dimensions, setDimensions] = useState(null);
     useEffect(() => {
         const observeTarget = ref.current;
         const resizeObserver = new ResizeObserver((entries) => {
-            console.log(entries);
-            // set resized dimensions here
+            entries.forEach(entry => {
+                setDimensions(entry.contentRect);
+            });
         });
         resizeObserver.observe(observeTarget);
         return () => {
@@ -23,21 +26,24 @@ const useResizeObserver = ref => {
 function BarChart({data}) {
  // const [data, setData] = useState([25, 30, 45, 60, 20, 65, 75,])
   const svgRef = useRef();
-  const dimensions = useResizeObserver(svgRef);
+  const wrapperRef = useRef();
+  const dimensions = useResizeObserver(wrapperRef);
 
   // will be called initially and on every data changz
   useEffect(() => {
     const svg = select(svgRef.current);
 
+    if(!dimensions) return;
+
     // scales
     const xScale = scaleBand()
           .domain(data.map((value, index) => index))
-          .range([0, 300])  // change
+          .range([0, dimensions.width])  // change
           .padding(0.5);
 
     const yScale = scaleLinear()
           .domain([0, 150])  // todo
-          .range([150, 0]);  // change
+          .range([dimensions.height, -30]);  // change
 
     const colorScale = scaleLinear()
           .domain([75,100, 150])
@@ -48,8 +54,9 @@ function BarChart({data}) {
     const xAxis = axisBottom(xScale).ticks(data.length);
     svg
         .select(".x-axis")
-        .style("transform", "translateY(150px)")
+        .style("transform", "translateY(180px)")
         .call(xAxis);
+        //`translateY(${dimensions.height}px)`
 
     // create y-axis
     const yAxis = axisLeft(yScale);
@@ -57,6 +64,7 @@ function BarChart({data}) {
       .select(".y-axis")
       .style("transform", "translateX(0px)")
       .call(yAxis);
+      //`translateX(${dimensions.height}px)`
 
     svg.selectAll(".bar")
       .data(data)
@@ -64,7 +72,7 @@ function BarChart({data}) {
       .attr("class", "bar")      
       .style("transform", "scale(1, -1)")
       .attr("x", (value, index) => xScale(index))
-      .attr("y", -150)      
+      .attr("y", -dimensions.height)      
       .attr("width", xScale.bandwidth())
       .on("mouseenter", (value, index) => {
         svg
@@ -82,17 +90,17 @@ function BarChart({data}) {
       .on("mouseleave", () => svg.select(".tooltip").remove())
       .transition()
       .attr("fill", colorScale)
-      .attr("height", value => 150 - yScale(value));  
-   }, [data]);
+      .attr("height", value => dimensions.height - yScale(value));  
+   }, [data, dimensions]);
 
   return (
-    <React.Fragment>
+    <div ref={wrapperRef} style={{ marginBottom: "2rem" }}>
       <svg ref={svgRef}>
         <g className="x-axis" />
         <g className="y-axis" />
       </svg>
       
-      </React.Fragment>
+      </div>
   );
 }
 
