@@ -22,7 +22,6 @@ const useResizeObserver = ref => {
 };
 
 
-
 function BarChart({data}) {
  // const [data, setData] = useState([25, 30, 45, 60, 20, 65, 75,])
   const svgRef = useRef();
