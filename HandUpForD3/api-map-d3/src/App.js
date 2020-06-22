@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BBTimeline from './BBTimeline';
 import './App.css';
 
@@ -9,7 +9,7 @@ function App() {
   const [highlight,  setHighlight] = useState([]);
 
   useEffect(() => {
-    fetch("https://www.breakingbadapi.com/api/charaters?category=Breaking+Bad")
+    fetch("https://www.breakingbadapi.com/api/characters?category=Breaking+Bad")
       .then(response => response.ok && response.json())
       .then(characters => {
         setBbCharacters(
